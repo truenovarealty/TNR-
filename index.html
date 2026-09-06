@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRUE NOVA FINANCE — Ultimate Real Estate & Corporate Portal</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                primary: "#003178",
+                "surface-variant": "#e2e2e2",
+                background: "#f8fafc",
+                "on-background": "#1e293b",
+                "on-surface": "#1e293b",
+                "on-surface-variant": "#64748b",
+                secondary: "#16a34a",
+                tertiary: "#dc2626"
+              }
+            }
+          }
+        }
+    </script>
+    <style>
+        :root {
+            --primary-color: #0f172a;
+            --bg-light: #f8fafc;
+        }
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-light);
+            color: #334155;
+            overflow-x: hidden;
+        }
+        .sidebar {
+            background-color: var(--primary-color);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+        .sidebar .nav-link {
+            font-weight: 500;
+            color: #94a3b8;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            padding: 10px 14px;
+            transition: all 0.2s ease;
+        }
+        .sidebar .nav-link.active, .sidebar .nav-link:hover {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .card {
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        }
+        input, select, textarea, .btn {
+            border-radius: 10px !important;
+        }
+        .native-iframe-wrap {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: calc(100vh - 64px);
+            z-index: 30;
+            background: #ffffff;
+        }
+        .native-iframe-wrap iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- AUTHENTICATION / LOGIN VIEW -->
+    <div id="loginSection" class="container d-flex align-items-center justify-content-center min-vh-100 py-4">
+        <div class="container" style="max-width: 420px;">
+            <div class="card shadow-lg p-4 p-md-5 bg-white">
+                <div class="text-center mb-4">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 56px; height: 56px;">
+                        <i class="bi bi-wallet2 fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-1">TRUE NOVA FINANCE</h3>
+                    <p class="text-muted small">Admin, Partner & Broker Portal</p>
+                </div>
+                
+                <div id="alertBox" class="alert d-none py-2 small" role="alert"></div>
+
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="email" class="form-label small fw-semibold text-secondary">Email Address</label>
+                        <input type="email" class="form-control" id="email" required placeholder="name@company.com">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label small fw-semibold text-secondary">Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" required placeholder="••••••••">
+                            <button class="btn btn-outline-secondary border-start-0" type="button" id="togglePassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2.5 fw-semibold shadow-sm mb-3">Sign In</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div id="appSection" class="d-none">
+        
+        <!-- ADMIN INTERFACE -->
+        <div id="adminInterface" class="d-none">
+            <nav class="navbar navbar-dark bg-dark d-md-none sticky-top px-3 shadow-sm">
+                <span class="navbar-brand fw-bold fs-6">TRUE NOVA FINANCE</span>
+                <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebarOffcanvas">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </nav>
+
+            <div class="offcanvas offcanvas-start bg-dark text-white d-md-none" tabindex="-1" id="mobileSidebarOffcanvas">
+                <div class="offcanvas-header border-bottom border-secondary">
+                    <h5 class="offcanvas-title fw-bold">TRUE NOVA</h5>
+                    <button type="button" class="btn-close btn-close-white text-reset shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body d-flex flex-column justify-content-between p-3">
+                    <ul class="nav nav-pills flex-column mb-auto" id="mobileSidebarNavLinks"></ul>
+                    <hr class="border-secondary my-3">
+                    <button class="btn btn-outline-light w-100 btn-sm py-2 logoutBtn"><i class="bi bi-box-arrow-right me-2"></i> Logout</button>
+                </div>
+            </div>
+
+            <div class="container-fluid">
+                <div class="row">
+                    <nav id="sidebar" class="col-md-3 col-lg-2 d-none d-md-block sidebar text-white min-vh-100 p-3 position-fixed">
+                        <div class="d-flex align-items-center pb-3 mb-3 border-bottom border-secondary">
+                            <span class="fs-5 fw-bold">TRUE NOVA</span>
+                        </div>
+                        <ul class="nav nav-pills flex-column mb-auto" id="desktopSidebarNavLinks"></ul>
+                        <hr class="border-secondary my-3">
+                        <button class="btn btn-outline-light w-100 btn-sm py-2 logoutBtn"><i class="bi bi-box-arrow-right me-2"></i> Logout</button>
+                    </nav>
+
+                    <main class="col-md-9 ms-sm-auto col-lg-10 px-3 px-md-4 py-4 mb-5 pb-5 offset-md-3 offset-lg-2">
+                        <!-- DASHBOARD -->
+                        <div id="adminDashboardView" class="app-view">
+                            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                                <div>
+                                    <h4 class="fw-bold mb-1 text-slate-800">Admin Dashboard</h4>
+                                    <p class="text-muted small mb-0">Good Morning, Admin 👋</p>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-primary btn-sm px-3 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#addRevenueModal"><i class="bi bi-plus-lg me-1"></i> Revenue</button>
+                                    <button class="btn btn-dark btn-sm px-3 shadow-sm fw-semibold" onclick="openAddExpenseModal()"><i class="bi bi-plus-lg me-1"></i> Expense</button>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-6 col-md-3">
+                                    <div class="card p-3 bg-white border-start border-4 border-success h-100">
+                                        <span class="text-muted small fw-medium">Total Revenue</span>
+                                        <h5 class="fw-bold text-success mt-1 mb-0" id="dashTotalRevenue">₹0</h5>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="card p-3 bg-white border-start border-4 border-danger h-100">
+                                        <span class="text-muted small fw-medium">Total Expenses</span>
+                                        <h5 class="fw-bold text-danger mt-1 mb-0" id="dashTotalExpenses">₹0</h5>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="card p-3 bg-white border-start border-4 border-primary h-100">
+                                        <span class="text-muted small fw-medium">Net Profit</span>
+                                        <h5 class="fw-bold text-primary mt-1 mb-0" id="dashNetProfitLoss">₹0</h5>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="card p-3 bg-white border-start border-4 border-indigo-600 h-100">
+                                        <span class="text-muted small fw-medium">Each Partner Share (1/3)</span>
+                                        <h5 class="fw-bold text-indigo-700 mt-1 mb-0" id="dashPartnerShare">₹0</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- REVENUE -->
+                        <div id="adminRevenueView" class="app-view d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4 class="fw-bold mb-0">Revenue History & Management</h4>
+                                <button class="btn btn-primary btn-sm px-3 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#addRevenueModal">+ Add Revenue</button>
+                            </div>
+                            <div class="card p-4 bg-white">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light"><tr><th>Date</th><th>Title / Source</th><th>Project</th><th>Amount</th><th>Mode</th></tr></thead>
+                                        <tbody id="revenueTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- EXPENSES -->
+                        <div id="adminExpensesView" class="app-view d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4 class="fw-bold mb-0">Expense History & Management</h4>
+                                <button class="btn btn-primary btn-sm px-3 shadow-sm fw-semibold" onclick="openAddExpenseModal()">+ Add Expense</button>
+                            </div>
+                            <div class="card p-4 bg-white">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light"><tr><th>Date</th><th>Title</th><th>Category</th><th>Amount</th><th>Paid By</th><th>Actions</th></tr></thead>
+                                        <tbody id="expenseTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PROJECTS -->
+                        <div id="adminProjectsView" class="app-view d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div>
+                                    <h4 class="fw-bold mb-1">Projects Management</h4>
+                                    <p class="text-muted small mb-0">Track real estate layouts like Avani Nagar 1</p>
+                                </div>
+                                <button class="btn btn-primary btn-sm px-3 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#addProjectModal">+ Add Project</button>
+                            </div>
+                            <div class="row g-3" id="projectsContainer"></div>
+                        </div>
+
+                        <!-- MORE -->
+                        <div id="adminMoreView" class="app-view d-none">
+                            <h4 class="fw-bold mb-4">Administration & Management</h4>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="card p-4 bg-white shadow-sm cursor-pointer hover:bg-slate-50" onclick="switchAdminTab('adminUsersView')">
+                                        <h5 class="fw-bold fs-6 text-primary"><i class="bi bi-people me-2"></i> Partner Accounts</h5>
+                                        <p class="text-muted small mb-0">Manage 3 equal partners (33.33% split).</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card p-4 bg-white shadow-sm cursor-pointer hover:bg-slate-50" onclick="switchAdminTab('adminBrokersView')">
+                                        <h5 class="fw-bold fs-6 text-warning"><i class="bi bi-person-badge me-2"></i> Brokers & Bookings</h5>
+                                        <p class="text-muted small mb-0">Manage brokers, plot commissions & bookings.</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card p-4 bg-white shadow-sm cursor-pointer hover:bg-slate-50" onclick="switchAdminTab('adminNotificationsView')">
+                                        <h5 class="fw-bold fs-6 text-danger"><i class="bi bi-bell me-2"></i> Notifications Center</h5>
+                                        <p class="text-muted small mb-0">Send & manage targeted/bulk alerts.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PARTNERS MANAGEMENT -->
+                        <div id="adminUsersView" class="app-view d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                                <div>
+                                    <h4 class="fw-bold mb-1">Partner Accounts Management</h4>
+                                    <p class="text-muted small mb-0">Create logins for 3 equal partners (33.33% profit/loss share)</p>
+                                </div>
+                                <button class="btn btn-primary btn-sm px-3 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#createPartnerModal"><i class="bi bi-person-plus me-1"></i> Create Partner Account</button>
+                            </div>
+                            <div class="card p-4 bg-white">
+                                <h5 class="fw-bold fs-6 mb-3">Registered Partners</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light"><tr><th>Name</th><th>Email</th><th>Role</th><th>Share</th></tr></thead>
+                                        <tbody id="adminUsersTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BROADCAST NOTIFICATIONS -->
+                        <div id="adminNotificationsView" class="app-view d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                                <div>
+                                    <h4 class="fw-bold mb-1">Notifications Center</h4>
+                                    <p class="text-muted small mb-0">Send targeted or bulk popup messages to team.</p>
+                                </div>
+                                <button class="btn btn-primary btn-sm px-3 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#addNotificationModal"><i class="bi bi-send me-1"></i> Send New Notification</button>
+                            </div>
+
+                            <div class="card p-4 bg-white">
+                                <h5 class="fw-bold fs-6 mb-3">Sent Notifications History (Click to Edit or Delete)</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light"><tr><th>Target</th><th>Title & Message</th><th>Date</th><th>Action</th></tr></thead>
+                                        <tbody id="adminNotificationsTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BROKERS & BOOKINGS MANAGEMENT -->
+                        <div id="adminBrokersView" class="app-view d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                                <div>
+                                    <h4 class="fw-bold mb-1">Brokers & Bookings Management</h4>
+                                    <p class="text-muted small mb-0">Add bookings, control status & track executive performance.</p>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-primary btn-sm px-3 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#addBookingModal"><i class="bi bi-plus-circle me-1"></i> Add Booking</button>
+                                    <button class="btn btn-outline-dark btn-sm px-3 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#addBrokerModal"><i class="bi bi-person-plus me-1"></i> Add Broker</button>
+                                </div>
+                            </div>
+
+                            <div class="card p-4 bg-white mb-4">
+                                <h5 class="fw-bold fs-6 mb-3">Registered Brokers</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light"><tr><th>Name & Phone</th><th>Action</th></tr></thead>
+                                        <tbody id="adminBrokersTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="card p-4 bg-white">
+                                <h5 class="fw-bold fs-6 mb-3">All Customer Bookings (Click to Edit, Delete & PDF)</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light"><tr><th>Broker</th><th>Customer</th><th>Plot / Status</th><th>Commission</th></tr></thead>
+                                        <tbody id="adminAllBookingsTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- PARTNER CORPORATE INTERFACE -->
+        <div id="partnerInterface" class="d-none bg-background text-on-background pb-[85px] pt-3 min-vh-100">
+            <main class="px-3 space-y-4 max-w-md mx-auto">
+                <div id="partnerHomeView" class="partner-view space-y-4">
+                    <section class="space-y-1 pt-2">
+                        <h2 class="text-lg font-bold text-on-surface" id="partnerWelcomeTitle">Hello Partner 👋</h2>
+                        <p class="text-xs text-on-surface-variant">Corporate P&L Center (33.33% Equal Split)</p>
+                    </section>
+
+                    <section class="grid grid-cols-2 gap-3">
+                        <div class="bg-white rounded-xl p-3 shadow-sm border border-success border-start border-4">
+                            <p class="text-[10px] font-bold text-slate-500 mb-1 uppercase">Total Revenue</p>
+                            <h4 class="text-lg font-extrabold text-success" id="partnerRev">₹0</h4>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 shadow-sm border border-danger border-start border-4">
+                            <p class="text-[10px] font-bold text-slate-500 mb-1 uppercase">Total Expenses</p>
+                            <h4 class="text-lg font-extrabold text-danger" id="partnerExp">₹0</h4>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 shadow-sm border border-primary border-start border-4">
+                            <p class="text-[10px] font-bold text-slate-500 mb-1 uppercase">Net Profit</p>
+                            <h4 class="text-lg font-extrabold text-primary" id="partnerNet">₹0</h4>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 shadow-sm border border-indigo-600 border-start border-4">
+                            <p class="text-[10px] font-bold text-slate-500 mb-1 uppercase">My 1/3 Share</p>
+                            <h4 class="text-lg font-extrabold text-indigo-700" id="partnerShare">₹0</h4>
+                        </div>
+                    </section>
+
+                    <div class="card p-4 bg-white shadow-sm space-y-3">
+                        <h5 class="fw-bold fs-6 mb-2 text-dark"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i> Download Date-Wise Corporate P&L</h5>
+                        <div class="row g-2">
+                            <div class="col-6"><label class="form-label text-xs">Start Date</label><input type="date" id="partnerStartDate" class="form-control form-control-sm"></div>
+                            <div class="col-6"><label class="form-label text-xs">End Date</label><input type="date" id="partnerEndDate" class="form-control form-control-sm"></div>
+                        </div>
+                        <button class="btn btn-primary w-100 btn-sm fw-semibold py-2" onclick="downloadPartnerPDFStatement()"><i class="bi bi-download me-1"></i> Download PDF Statement</button>
+                    </div>
+
+                    <div class="card p-3 bg-white shadow-sm">
+                        <h5 class="fw-bold fs-6 mb-3">Company Expenses Log</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead class="table-light"><tr><th>Date</th><th>Title</th><th>Category</th><th>Amount</th><th>Paid By</th></tr></thead>
+                                <tbody id="partnerExpenseTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="partnerBookingPortalView" class="partner-view native-iframe-wrap d-none">
+                    <iframe id="partnerBookingWebsiteIframe" src="" title="Plot Booking Portal"></iframe>
+                </div>
+
+                <div id="partnerCrmPortalView" class="partner-view native-iframe-wrap d-none">
+                    <iframe id="partnerCrmWebsiteIframe" src="" title="CRM Portal"></iframe>
+                </div>
+
+                <div id="partnerProfileView" class="partner-view space-y-4 d-none pt-2">
+                    <h3 class="text-lg font-bold">Partner Profile</h3>
+                    <div class="bg-white rounded-xl p-5 shadow-sm border space-y-3">
+                        <div><label class="text-xs text-slate-500">Name</label><p class="fw-bold" id="partnerProfileName">-</p></div>
+                        <div><label class="text-xs text-slate-500">Email</label><p class="fw-bold" id="partnerProfileEmail">-</p></div>
+                        <div><label class="text-xs text-slate-500">Profit Share Ratio</label><p class="fw-bold text-indigo-700">33.33% (Equal Share)</p></div>
+                        <button class="btn btn-outline-danger w-100 btn-sm mt-3 logoutBtn"><i class="bi bi-box-arrow-right me-1"></i> Logout</button>
+                    </div>
+                </div>
+            </main>
+
+            <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 h-16 bg-white border-t border-slate-200 shadow-lg">
+                <button class="partner-nav-btn flex flex-col items-center justify-center text-blue-900 bg-blue-50 rounded-full px-3 py-1" data-target="partnerHomeView">
+                    <span class="material-symbols-outlined mb-0 text-xl" style="font-variation-settings: 'FILL' 1;">home</span>
+                    <span class="text-[10px] font-bold">Home</span>
+                </button>
+                <button class="partner-nav-btn flex flex-col items-center justify-center text-slate-500 hover:text-blue-900 py-1 px-2" data-target="partnerBookingPortalView">
+                    <span class="material-symbols-outlined mb-0 text-xl">public</span>
+                    <span class="text-[10px] font-bold">Plot Booking</span>
+                </button>
+                <button class="partner-nav-btn flex flex-col items-center justify-center text-slate-500 hover:text-blue-900 py-1 px-2" data-target="partnerCrmPortalView">
+                    <span class="material-symbols-outlined mb-0 text-xl">devices</span>
+                    <span class="text-[10px] font-bold">CRM</span>
+                </button>
+                <button class="partner-nav-btn flex flex-col items-center justify-center text-slate-500 hover:text-blue-900 py-1 px-2" data-target="partnerProfileView">
+                    <span class="material-symbols-outlined mb-0 text-xl">person</span>
+                    <span class="text-[10px] font-bold">Profile</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- BROKER / EXECUTIVE INTERFACE -->
+        <div id="brokerInterface" class="d-none bg-background text-on-background pb-[85px] pt-3 min-vh-100">
+            <main class="px-3 space-y-4 max-w-md mx-auto">
+                <div id="brokerHomeView" class="broker-view space-y-4">
+                    <section class="space-y-1 pt-2">
+                        <h2 class="text-lg font-bold text-on-surface" id="brokerWelcomeTitle">Hello Broker 👋</h2>
+                        <p class="text-xs text-on-surface-variant">Your Sales & Status Dashboard</p>
+                    </section>
+
+                    <section class="grid grid-cols-2 gap-3">
+                        <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-200">
+                            <p class="text-[10px] font-bold text-slate-500 mb-1 uppercase">Total Bookings</p>
+                            <h4 class="text-lg font-extrabold text-primary" id="cardTotalBookings">0</h4>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-200">
+                            <p class="text-[10px] font-bold text-slate-500 mb-1 uppercase">Sold Out</p>
+                            <h4 class="text-lg font-extrabold text-success" id="cardSoldOut">0</h4>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-200">
+                            <p class="text-[10px] font-bold text-slate-500 mb-1 uppercase">Payment Pending</p>
+                            <h4 class="text-lg font-extrabold text-warning" id="cardPaymentPending">₹0</h4>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-200">
+                            <p class="text-[10px] font-bold text-slate-500 mb-1 uppercase">Received Payment</p>
+                            <h4 class="text-lg font-extrabold text-success" id="cardPaymentReceived">₹0</h4>
+                        </div>
+                    </section>
+
+                    <div class="card p-3 bg-white">
+                        <h5 class="fw-bold fs-6 mb-3">My Plot Bookings History (Click for details)</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead class="table-light"><tr><th>Customer</th><th>Plot</th><th>Status</th><th>Comm.</th></tr></thead>
+                                <tbody id="brokerBookingsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="brokerBookingPortalView" class="broker-view native-iframe-wrap d-none">
+                    <iframe id="bookingWebsiteIframe" src="" title="Plot Booking Portal"></iframe>
+                </div>
+
+                <div id="brokerCrmPortalView" class="broker-view native-iframe-wrap d-none">
+                    <iframe id="crmWebsiteIframe" src="" title="CRM Portal"></iframe>
+                </div>
+
+                <div id="brokerProfileView" class="broker-view space-y-4 d-none pt-2">
+                    <h3 class="text-lg font-bold">Broker Profile</h3>
+                    <div class="bg-white rounded-xl p-5 shadow-sm border space-y-3">
+                        <div><label class="text-xs text-slate-500">Name</label><p class="fw-bold" id="brokerProfileName">-</p></div>
+                        <div><label class="text-xs text-slate-500">Email</label><p class="fw-bold" id="brokerProfileEmail">-</p></div>
+                        <div><label class="text-xs text-slate-500">Phone</label><p class="fw-bold" id="brokerProfilePhone">-</p></div>
+                        <button class="btn btn-outline-danger w-100 btn-sm mt-3 logoutBtn">Logout</button>
+                    </div>
+                </div>
+            </main>
+
+            <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 h-16 bg-white border-t border-slate-200 shadow-lg">
+                <button class="broker-nav-btn flex flex-col items-center justify-center text-blue-900 bg-blue-50 rounded-full px-3 py-1" data-target="brokerHomeView">
+                    <span class="material-symbols-outlined mb-0 text-xl" style="font-variation-settings: 'FILL' 1;">home</span>
+                    <span class="text-[10px] font-bold">Home</span>
+                </button>
+                <button class="broker-nav-btn flex flex-col items-center justify-center text-slate-500 hover:text-blue-900 py-1 px-2" data-target="brokerBookingPortalView">
+                    <span class="material-symbols-outlined mb-0 text-xl">public</span>
+                    <span class="text-[10px] font-bold">Plot Booking</span>
+                </button>
+                <button class="broker-nav-btn flex flex-col items-center justify-center text-slate-500 hover:text-blue-900 py-1 px-2" data-target="brokerCrmPortalView">
+                    <span class="material-symbols-outlined mb-0 text-xl">devices</span>
+                    <span class="text-[10px] font-bold">CRM</span>
+                </button>
+                <button class="broker-nav-btn flex flex-col items-center justify-center text-slate-500 hover:text-blue-900 py-1 px-2" data-target="brokerProfileView">
+                    <span class="material-symbols-outlined mb-0 text-xl">person</span>
+                    <span class="text-[10px] font-bold">Profile</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <!-- Revenue Modal -->
+    <div class="modal fade" id="addRevenueModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="fw-bold fs-6">Add Revenue Entry</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="revenueForm">
+                        <div class="mb-3"><label class="form-label small fw-semibold">Date</label><input type="date" id="revDate" class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Title</label><input type="text" id="revTitle" class="form-control" required placeholder="Plot Booking"></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Customer / Source</label><input type="text" id="revSource" class="form-control" required placeholder="Customer Name"></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Project</label><input type="text" id="revProject" class="form-control" placeholder="Avani Nagar 1"></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Amount (₹)</label><input type="number" id="revAmount" class="form-control" step="0.01" required></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Payment Mode</label>
+                            <select id="revMode" class="form-select">
+                                <option value="Bank Transfer">Bank Transfer</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Cash">Cash</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2.5 fw-semibold mt-2">Save Revenue</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Modal -->
+    <div class="modal fade" id="addExpenseModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="fw-bold fs-6" id="expenseModalTitle">Add Expense Entry</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="expenseForm">
+                        <input type="hidden" id="expenseId">
+                        <div class="mb-3"><label class="form-label small fw-semibold">Date</label><input type="date" id="expDate" class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Title</label><input type="text" id="expTitle" class="form-control" required placeholder="Facebook Ads"></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Category</label>
+                            <select id="expCategory" class="form-select">
+                                <option value="Marketing">Marketing</option>
+                                <option value="Office Rent">Office Rent</option>
+                                <option value="Petrol">Petrol</option>
+                                <option value="Salary">Salary</option>
+                                <option value="Miscellaneous">Miscellaneous</option>
+                            </select>
+                        </div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Project</label><input type="text" id="expProject" class="form-control" placeholder="Avani Nagar 1"></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Amount (₹)</label><input type="number" id="expAmount" class="form-control" step="0.01" required></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Paid By</label><input type="text" id="expPaidBy" class="form-control" required></div>
+                        <button type="submit" class="btn btn-primary w-100 py-2.5 fw-semibold mt-2" id="expenseSubmitBtn">Save Expense</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div class="modal fade" id="addNotificationModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="fw-bold fs-6" id="notifModalTitle">Send Notification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="notificationForm">
+                        <input type="hidden" id="notificationId">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Target Receiver</label>
+                            <select id="notifTargetSelect" class="form-select" required>
+                                <option value="all">All Users (Bulk)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Title</label><input type="text" id="notifTitleInput" class="form-control" required placeholder="Important Update"></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Message</label><textarea id="notifBodyInput" class="form-control" rows="3" required placeholder="Type your message here..."></textarea></div>
+                        <button type="submit" class="btn btn-primary w-100 py-2.5 fw-semibold mt-2" id="notifSubmitBtn">Send Notification</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Notification Modal -->
+    <div class="modal fade" id="brokerPopupModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 text-center p-4">
+                <div class="mb-3 text-primary"><span class="material-symbols-outlined display-4">notifications_active</span></div>
+                <h4 class="fw-bold text-dark mb-2" id="popupNotifTitle">New Notification</h4>
+                <p class="text-muted small mb-4" id="popupNotifBody">Message content goes here...</p>
+                <button type="button" class="btn btn-primary w-100 py-2.5 fw-semibold" data-bs-dismiss="modal">Got It, Thanks!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Partner Modal -->
+    <div class="modal fade" id="createPartnerModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="fw-bold fs-6">Create Partner Account (33.33% Share)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="createPartnerForm">
+                        <div class="mb-3"><label class="form-label small fw-semibold">Partner Name</label><input type="text" id="newPartnerName" class="form-control" required placeholder="Partner Name"></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Email Address (Login ID)</label><input type="email" id="newPartnerEmail" class="form-control" required placeholder="partner@company.com"></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Password</label><input type="password" id="newPartnerPassword" class="form-control" required placeholder="Min 6 characters"></div>
+                        <button type="submit" class="btn btn-primary w-100 py-2.5 fw-semibold mt-2">Create Partner Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Booking Modal -->
+    <div class="modal fade" id="addBookingModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="fw-bold fs-6">Admin Booking & Status Control</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="bookingForm">
+                        <input type="hidden" id="bookingId">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Assign Executive / Broker</label>
+                            <select id="bookBrokerSelect" class="form-select" required>
+                                <option value="">Select Executive</option>
+                            </select>
+                        </div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Customer Full Name</label><input type="text" id="custName" class="form-control" required placeholder="Customer Name"></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Customer Mobile</label><input type="text" id="custPhone" class="form-control" required placeholder="+91 9876543210"></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Project Name</label><input type="text" id="bookProject" class="form-control" required placeholder="Avani Nagar 1"></div>
+                        <div class="row">
+                            <div class="col-6 mb-3"><label class="form-label small fw-semibold">Plot Number</label><input type="text" id="bookPlotNo" class="form-control" required placeholder="Plot 45"></div>
+                            <div class="col-6 mb-3"><label class="form-label small fw-semibold">Plot Size (Sqft)</label><input type="number" id="bookPlotSize" class="form-control" required placeholder="1500" oninput="calculateCommission()"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3"><label class="form-label small fw-semibold">Broker Std Comm/Sqft (₹)</label><input type="number" id="bookStdComm" class="form-control" step="0.01" required placeholder="200" oninput="calculateCommission()"></div>
+                            <div class="col-6 mb-3"><label class="form-label small fw-semibold">Discount/Sqft (₹)</label><input type="number" id="bookDiscount" class="form-control" step="0.01" value="0" required oninput="calculateCommission()"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-primary">Total Calculated Commission (₹)</label>
+                            <input type="number" id="bookCommission" class="form-control fw-bold text-success" step="0.01" required placeholder="Total Commission">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label small fw-semibold">Booking Status</label>
+                                <select id="bookStatus" class="form-select">
+                                    <option value="Booked">Booked</option>
+                                    <option value="Sold Out">Sold Out</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label small fw-semibold">Payment Status</label>
+                                <select id="bookPaymentStatus" class="form-select">
+                                    <option value="Payment Received">Payment Received</option>
+                                    <option value="Payment Pending">Payment Pending</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2.5 fw-semibold mt-2" id="bookingSubmitBtn">Save & Allocate Booking</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Details Modal -->
+    <div class="modal fade" id="bookingDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="fw-bold fs-6">Complete Booking Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="bookingDetailModalBody"></div>
+                <div class="modal-footer border-0 pt-0 pb-4 px-4 d-flex flex-column gap-2">
+                    <button type="button" class="btn btn-success w-100 py-2 fw-semibold" id="downloadBookingPdfBtn"><i class="bi bi-download me-2"></i> Download Booking PDF Receipt</button>
+                    <div id="adminBookingActions" class="w-100 d-flex gap-2 d-none">
+                        <button type="button" class="btn btn-outline-primary w-50 py-1.5 btn-sm fw-semibold" id="editBookingBtn">Edit Booking</button>
+                        <button type="button" class="btn btn-outline-danger w-50 py-1.5 btn-sm fw-semibold" id="deleteBookingBtn">Delete Booking</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Broker Modal -->
+    <div class="modal fade" id="addBrokerModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="fw-bold fs-6">Create Broker / Executive Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="brokerForm">
+                        <div class="mb-3"><label class="form-label small fw-semibold">Full Name</label><input type="text" id="brokerName" class="form-control" required placeholder="Broker Name"></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Email Address (Login ID)</label><input type="email" id="brokerEmail" class="form-control" required placeholder="broker@company.com"></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Password</label><input type="password" id="brokerPassword" class="form-control" required placeholder="Min 6 chars"></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Mobile Number</label><input type="text" id="brokerPhone" class="form-control" required placeholder="+91 9876543210"></div>
+                        <button type="submit" class="btn btn-primary w-100 py-2.5 fw-semibold mt-2">Create Broker Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addProjectModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="fw-bold fs-6">Add New Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="projectForm">
+                        <div class="mb-3"><label class="form-label small fw-semibold">Project Name</label><input type="text" id="projName" class="form-control" required placeholder="Avani Nagar 1"></div>
+                        <div class="mb-3"><label class="form-label small fw-semibold">Location / Details</label><input type="text" id="projDetails" class="form-control" required placeholder="Nagpur"></div>
+                        <button type="submit" class="btn btn-primary w-100 py-2.5 fw-semibold mt-2">Save Project</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- FIREBASE & APP LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDwSNxVCuPr3OKB_MSUEx_u5sOJX3CPugo",
+            authDomain: "true-nova-finance.firebaseapp.com",
+            projectId: "true-nova-finance",
+            storageBucket: "true-nova-finance.firebasestorage.app",
+            messagingSenderId: "727988165498",
+            appId: "1:727988165498:web:cec6302f03ee9c5f8214c3",
+            measurementId: "G-1NPLQWYSZL"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUserUid = null;
+        let currentUserData = null;
+        let allBookingsCache = [];
+        let allExpensesCache = [];
+        let allRevenuesCache = [];
+
+        const loginSection = document.getElementById("loginSection");
+        const appSection = document.getElementById("appSection");
+        const adminInterface = document.getElementById("adminInterface");
+        const partnerInterface = document.getElementById("partnerInterface");
+        const brokerInterface = document.getElementById("brokerInterface");
+        const alertBox = document.getElementById("alertBox");
+        const loginForm = document.getElementById("loginForm");
+
+        document.getElementById("togglePassword").addEventListener("click", () => {
+            const pwdInput = document.getElementById("password");
+            pwdInput.setAttribute("type", pwdInput.getAttribute("type") === "password" ? "text" : "password");
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                loginSection.classList.add("d-none");
+                appSection.classList.remove("d-none");
+                try {
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    currentUserData = userDoc.exists() ? userDoc.data() : { role: "admin", name: "Admin", email: user.email };
+                    setupUIByRole(currentUserData);
+                } catch (e) {
+                    currentUserData = { role: "admin", name: "Admin", email: user.email };
+                    setupUIByRole(currentUserData);
+                }
+            } else {
+                currentUserUid = null;
+                appSection.classList.add("d-none");
+                loginSection.classList.remove("d-none");
+            }
+        });
+
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                alertBox.className = "alert alert-danger py-2 small";
+                alertBox.textContent = "Invalid email or password.";
+                alertBox.classList.remove("d-none");
+            }
+        });
+
+        const handleLogout = async () => { await signOut(auth); };
+        document.querySelectorAll(".logoutBtn").forEach(btn => btn.addEventListener("click", handleLogout));
+
+        window.calculateCommission = function() {
+            const size = parseFloat(document.getElementById("bookPlotSize").value || 0);
+            const stdComm = parseFloat(document.getElementById("bookStdComm").value || 0);
+            const disc = parseFloat(document.getElementById("bookDiscount").value || 0);
+            const netSqftComm = stdComm - disc;
+            document.getElementById("bookCommission").value = netSqftComm > 0 ? (size * netSqftComm) : 0;
+        };
+
+        async function setupUIByRole(userData) {
+            adminInterface.classList.add("d-none");
+            partnerInterface.classList.add("d-none");
+            brokerInterface.classList.add("d-none");
+
+            if (userData.role === "admin") {
+                adminInterface.classList.remove("d-none");
+                const desktopNav = document.getElementById("desktopSidebarNavLinks");
+                const mobileNav = document.getElementById("mobileSidebarNavLinks");
+                const navContent = `
+                    <li class="nav-item"><a href="#" class="nav-link active" data-target="adminDashboardView"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link" data-target="adminRevenueView"><i class="bi bi-cash-stack me-2"></i> Revenue</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link" data-target="adminExpensesView"><i class="bi bi-receipt me-2"></i> Expenses</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link" data-target="adminProjectsView"><i class="bi bi-building me-2"></i> Projects</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link" data-target="adminMoreView"><i class="bi bi-three-dots me-2"></i> More</a></li>
+                `;
+                desktopNav.innerHTML = navContent;
+                mobileNav.innerHTML = navContent;
+
+                loadAdminData();
+                loadProjectsData();
+                loadBrokersData();
+                loadUsersData();
+                loadAllBookingsAdmin();
+                loadNotificationsAdmin();
+                loadWebsiteConfig();
+
+                window.switchAdminTab = function(target) {
+                    document.querySelectorAll(".sidebar .nav-link, .offcanvas .nav-link").forEach(l => l.classList.remove("active"));
+                    const activeLink = document.querySelector(`[data-target="${target}"]`);
+                    if (activeLink) activeLink.classList.add("active");
+                    
+                    document.querySelectorAll(".app-view").forEach(v => v.classList.add("d-none"));
+                    document.getElementById(target).classList.remove("d-none");
+
+                    const mobileOffcanvasEl = document.getElementById("mobileSidebarOffcanvas");
+                    const bsOffcanvas = bootstrap.Offcanvas.getInstance(mobileOffcanvasEl);
+                    if (bsOffcanvas) bsOffcanvas.hide();
+                };
+
+                document.querySelectorAll(".sidebar .nav-link, .offcanvas .nav-link").forEach(link => {
+                    link.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        switchAdminTab(link.getAttribute("data-target"));
+                    });
+                });
+            } else if (userData.role === "partner") {
+                partnerInterface.classList.remove("d-none");
+                document.getElementById("partnerWelcomeTitle").textContent = `Hello Partner (${userData.name}) 👋`;
+                document.getElementById("partnerProfileName").textContent = userData.name;
+                document.getElementById("partnerProfileEmail").textContent = userData.email;
+
+                loadPartnerCorporateData();
+                loadEmbeddedPartnerWebsites();
+                checkUserNotifications(userData.uid);
+
+                document.querySelectorAll(".partner-nav-btn").forEach(btn => {
+                    btn.addEventListener("click", () => {
+                        const targetView = btn.getAttribute("data-target");
+                        document.querySelectorAll(".partner-view").forEach(v => v.classList.add("d-none"));
+                        document.getElementById(targetView).classList.remove("d-none");
+
+                        document.querySelectorAll(".partner-nav-btn").forEach(b => {
+                            b.classList.remove("text-blue-900", "bg-blue-50");
+                            b.classList.add("text-slate-500");
+                        });
+                        btn.classList.add("text-blue-900", "bg-blue-50");
+                        btn.classList.remove("text-slate-500");
+                    });
+                });
+            } else if (userData.role === "broker") {
+                brokerInterface.classList.remove("d-none");
+                document.getElementById("brokerWelcomeTitle").textContent = `Hello ${userData.name} 👋`;
+                document.getElementById("brokerProfileName").textContent = userData.name;
+                document.getElementById("brokerProfileEmail").textContent = userData.email;
+                document.getElementById("brokerProfilePhone").textContent = userData.phone || "-";
+                
+                loadBrokerPortalData(userData.uid, userData.name);
+                loadEmbeddedWebsites();
+                checkUserNotifications(userData.uid);
+
+                document.querySelectorAll(".broker-nav-btn").forEach(btn => {
+                    btn.addEventListener("click", () => {
+                        const targetView = btn.getAttribute("data-target");
+                        document.querySelectorAll(".broker-view").forEach(v => v.classList.add("d-none"));
+                        document.getElementById(targetView).classList.remove("d-none");
+
+                        document.querySelectorAll(".broker-nav-btn").forEach(b => {
+                            b.classList.remove("text-blue-900", "bg-blue-50");
+                            b.classList.add("text-slate-500");
+                        });
+                        btn.classList.add("text-blue-900", "bg-blue-50");
+                        btn.classList.remove("text-slate-500");
+                    });
+                });
+            }
+        }
+
+        async function loadWebsiteConfig() {
+            try {
+                const cfgDoc = await getDoc(doc(db, "settings", "websites"));
+                if(cfgDoc.exists()) {
+                    const data = cfgDoc.data();
+                    document.getElementById("bookingWebUrl").value = data.bookingUrl || "";
+                    document.getElementById("crmWebUrl").value = data.crmUrl || "";
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadEmbeddedWebsites() {
+            try {
+                const cfgDoc = await getDoc(doc(db, "settings", "websites"));
+                if(cfgDoc.exists()) {
+                    const data = cfgDoc.data();
+                    if(data.bookingUrl) document.getElementById("bookingWebsiteIframe").src = data.bookingUrl;
+                    if(data.crmUrl) document.getElementById("crmWebsiteIframe").src = data.crmUrl;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadEmbeddedPartnerWebsites() {
+            try {
+                const cfgDoc = await getDoc(doc(db, "settings", "websites"));
+                if(cfgDoc.exists()) {
+                    const data = cfgDoc.data();
+                    if(data.bookingUrl) document.getElementById("partnerBookingWebsiteIframe").src = data.bookingUrl;
+                    if(data.crmUrl) document.getElementById("partnerCrmWebsiteIframe").src = data.crmUrl;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        document.getElementById("websiteConfigForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const bookingUrl = document.getElementById("bookingWebUrl").value;
+            const crmUrl = document.getElementById("crmWebUrl").value;
+            try {
+                await setDoc(doc(db, "settings", "websites"), { bookingUrl, crmUrl }, { merge: true });
+                alert("Websites configured successfully!");
+            } catch(err) { alert("Error: " + err.message); }
+        });
+
+        // Revenue Form Submit
+        document.getElementById("revenueForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            try {
+                await addDoc(collection(db, "revenues"), {
+                    date: document.getElementById("revDate").value,
+                    title: document.getElementById("revTitle").value,
+                    source: document.getElementById("revSource").value,
+                    project: document.getElementById("revProject").value,
+                    amount: parseFloat(document.getElementById("revAmount").value),
+                    paymentMode: document.getElementById("revMode").value,
+                    createdAt: new Date().toISOString()
+                });
+                bootstrap.Modal.getInstance(document.getElementById("addRevenueModal")).hide();
+                document.getElementById("revenueForm").reset();
+                loadAdminData();
+                alert("Revenue entry added successfully!");
+            } catch(err) { alert("Error: " + err.message); }
+        });
+
+        // Expense Form Submit
+        document.getElementById("expenseForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const expenseId = document.getElementById("expenseId").value;
+            const expenseData = {
+                date: document.getElementById("expDate").value,
+                title: document.getElementById("expTitle").value,
+                category: document.getElementById("expCategory").value,
+                project: document.getElementById("expProject").value,
+                amount: parseFloat(document.getElementById("expAmount").value),
+                paidBy: document.getElementById("expPaidBy").value,
+                updatedAt: new Date().toISOString()
+            };
+
+            try {
+                if (expenseId) {
+                    await updateDoc(doc(db, "expenses", expenseId), expenseData);
+                    alert("Expense updated successfully!");
+                } else {
+                    expenseData.createdAt = new Date().toISOString();
+                    await addDoc(collection(db, "expenses"), expenseData);
+                    alert("Expense added successfully!");
+                }
+                bootstrap.Modal.getInstance(document.getElementById("addExpenseModal")).hide();
+                document.getElementById("expenseForm").reset();
+                loadAdminData();
+            } catch (err) { alert("Error: " + err.message); }
+        });
+
+        window.openAddExpenseModal = function() {
+            document.getElementById("expenseModalTitle").textContent = "Add Expense Entry";
+            document.getElementById("expenseSubmitBtn").textContent = "Save Expense";
+            document.getElementById("expenseId").value = "";
+            document.getElementById("expenseForm").reset();
+            if(currentUserData) document.getElementById("expPaidBy").value = currentUserData.name;
+            new bootstrap.Modal(document.getElementById("addExpenseModal")).show();
+        };
+
+        window.editExpense = function(id, date, title, category, project, amount, paidBy) {
+            document.getElementById("expenseModalTitle").textContent = "Edit Expense Entry";
+            document.getElementById("expenseSubmitBtn").textContent = "Update Expense";
+            document.getElementById("expenseId").value = id;
+            document.getElementById("expDate").value = date;
+            document.getElementById("expTitle").value = title;
+            document.getElementById("expCategory").value = category;
+            document.getElementById("expProject").value = project;
+            document.getElementById("expAmount").value = amount;
+            document.getElementById("expPaidBy").value = paidBy;
+            new bootstrap.Modal(document.getElementById("addExpenseModal")).show();
+        };
+
+        window.deleteExpense = async function(id) {
+            if(confirm("Are you sure you want to delete this expense?")) {
+                await deleteDoc(doc(db, "expenses", id));
+                loadAdminData();
+                alert("Expense deleted!");
+            }
+        };
+
+        document.getElementById("broadcastForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const title = document.getElementById("notifTitle").value;
+            const body = document.getElementById("notifBody").value;
+            const target = document.getElementById("notifTarget").value;
+
+            try {
+                await addDoc(collection(db, "notifications"), {
+                    title, body, target, createdAt: new Date().toISOString()
+                });
+                alert("Broadcast notification saved and sent successfully!");
+                document.getElementById("broadcastForm").reset();
+            } catch(err) { alert("Error: " + err.message); }
+        });
+
+        document.getElementById("notificationForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const notifId = document.getElementById("notificationId").value;
+            const target = document.getElementById("notifTargetSelect").value;
+            const title = document.getElementById("notifTitleInput").value;
+            const body = document.getElementById("notifBodyInput").value;
+
+            const notifData = { target, title, body, updatedAt: new Date().toISOString() };
+            try {
+                if(notifId) {
+                    await updateDoc(doc(db, "notifications", notifId), notifData);
+                    alert("Notification updated successfully!");
+                } else {
+                    notifData.createdAt = new Date().toISOString();
+                    await addDoc(collection(db, "notifications"), notifData);
+                    alert("Notification sent successfully!");
+                }
+                bootstrap.Modal.getInstance(document.getElementById("addNotificationModal")).hide();
+                document.getElementById("notificationForm").reset();
+                loadNotificationsAdmin();
+            } catch(err) { alert("Error: " + err.message); }
+        });
+
+        async function loadNotificationsAdmin() {
+            try {
+                const snap = await getDocs(collection(db, "notifications"));
+                const tbody = document.getElementById("adminNotificationsTableBody");
+                tbody.innerHTML = "";
+                if(snap.empty) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted small py-3">No notifications sent yet.</td></tr>`;
+                    return;
+                }
+
+                snap.forEach(d => {
+                    const id = d.id;
+                    const n = d.data();
+                    let targetLabel = n.target === 'all' ? 'All Users (Bulk)' : `Target UID: ${n.target.substring(0,8)}...`;
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><span class="badge bg-primary">${targetLabel}</span></td>
+                            <td><strong>${n.title}</strong><br><small class="text-muted">${n.body}</small></td>
+                            <td><small>${new Date(n.createdAt || Date.now()).toLocaleDateString()}</small></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary py-0 px-1 me-1" onclick="editNotification('${id}', '${n.target}', '${n.title}', '${n.body}')"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteNotification('${id}')"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>`;
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        window.editNotification = function(id, target, title, body) {
+            document.getElementById("notificationId").value = id;
+            document.getElementById("notifTargetSelect").value = target;
+            document.getElementById("notifTitleInput").value = title;
+            document.getElementById("notifBodyInput").value = body;
+            document.getElementById("notifSubmitBtn").textContent = "Update Notification";
+            new bootstrap.Modal(document.getElementById("addNotificationModal")).show();
+        };
+
+        window.deleteNotification = async function(id) {
+            if(confirm("Delete this notification?")) {
+                await deleteDoc(doc(db, "notifications", id));
+                loadNotificationsAdmin();
+                alert("Notification deleted!");
+            }
+        };
+
+        async function checkUserNotifications(userUid) {
+            try {
+                const snap = await getDocs(collection(db, "notifications"));
+                snap.forEach(d => {
+                    const n = d.data();
+                    if(n.target === 'all' || n.target === userUid) {
+                        document.getElementById("popupNotifTitle").textContent = n.title;
+                        document.getElementById("popupNotifBody").textContent = n.body;
+                        new bootstrap.Modal(document.getElementById("brokerPopupModal")).show();
+                    }
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadPartnerCorporateData() {
+            try {
+                const revSnap = await getDocs(collection(db, "revenues"));
+                const expSnap = await getDocs(collection(db, "expenses"));
+                let totalRev = 0, totalExp = 0;
+                allExpensesCache = [];
+
+                revSnap.forEach(d => totalRev += Number(d.data().amount || 0));
+                expSnap.forEach(d => {
+                    const e = d.data();
+                    allExpensesCache.push(e);
+                    totalExp += Number(e.amount || 0);
+                });
+
+                const netPL = totalRev - totalExp;
+                const partnerShare = Math.round((netPL / 3) * 100) / 100;
+
+                document.getElementById("partnerRev").textContent = `₹${totalRev.toLocaleString()}`;
+                document.getElementById("partnerExp").textContent = `₹${totalExp.toLocaleString()}`;
+                document.getElementById("partnerNet").textContent = `₹${netPL.toLocaleString()}`;
+                document.getElementById("partnerShare").textContent = `₹${partnerShare.toLocaleString()}`;
+
+                const tbody = document.getElementById("partnerExpenseTableBody");
+                tbody.innerHTML = "";
+                allExpensesCache.forEach(e => {
+                    tbody.innerHTML += `<tr><td>${e.date}</td><td>${e.title}</td><td>${e.category}</td><td>₹${Number(e.amount).toLocaleString()}</td><td>${e.paidBy}</td></tr>`;
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        window.downloadPartnerPDFStatement = function() {
+            const start = document.getElementById("partnerStartDate").value;
+            const end = document.getElementById("partnerEndDate").value;
+
+            const filteredExp = allExpensesCache.filter(e => {
+                if (start && e.date < start) return false;
+                if (end && e.date > end) return false;
+                return true;
+            });
+
+            const expSum = filteredExp.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+            const net = -expSum;
+            const share = Math.round((net / 3) * 100) / 100;
+
+            const { jsPDF } = window.jspdf;
+            const docPdf = new jsPDF();
+            docPdf.setFillColor(15, 23, 42);
+            docPdf.rect(0, 0, 210, 35, "F");
+            docPdf.setTextColor(255, 255, 255);
+            docPdf.setFont("helvetica", "bold");
+            docPdf.setFontSize(18);
+            docPdf.text("TRUE NOVA REALTY", 14, 18);
+            docPdf.setFontSize(10);
+            docPdf.setFont("helvetica", "normal");
+            docPdf.text("CORPORATE PROFIT & LOSS STATEMENT (33.33% PARTNER SHARE)", 14, 26);
+
+            docPdf.setTextColor(50, 50, 50);
+            docPdf.setFontSize(11);
+            let y = 48;
+            docPdf.text(`Statement Period: ${start || 'Beginning'} to ${end || 'Present'}`, 14, y); y += 10;
+            docPdf.text(`Total Expenses in Period: Rs. ${expSum.toLocaleString()}`, 14, y); y += 10;
+            docPdf.text(`Partner Share (1/3): Rs. ${share.toLocaleString()}`, 14, y); y += 15;
+
+            docPdf.save(`Partner_Corporate_Statement.pdf`);
+        };
+
+        document.getElementById("bookingForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const bookingId = document.getElementById("bookingId").value;
+            const brokerSelect = document.getElementById("bookBrokerSelect");
+            const selectedOption = brokerSelect.options[brokerSelect.selectedIndex];
+            
+            const bookingData = {
+                brokerUid: brokerSelect.value,
+                brokerName: selectedOption.text.split(" (")[0],
+                customerName: document.getElementById("custName").value,
+                customerPhone: document.getElementById("custPhone").value,
+                project: document.getElementById("bookProject").value,
+                plotNo: document.getElementById("bookPlotNo").value,
+                plotSize: document.getElementById("bookPlotSize").value,
+                stdComm: parseFloat(document.getElementById("bookStdComm").value || 0),
+                discount: parseFloat(document.getElementById("bookDiscount").value || 0),
+                commission: parseFloat(document.getElementById("bookCommission").value || 0),
+                status: document.getElementById("bookStatus").value,
+                paymentStatus: document.getElementById("bookPaymentStatus").value,
+                updatedAt: new Date().toISOString()
+            };
+
+            try {
+                if(bookingId) {
+                    await updateDoc(doc(db, "bookings", bookingId), bookingData);
+                    alert("Booking updated successfully!");
+                } else {
+                    bookingData.createdAt = new Date().toISOString();
+                    await addDoc(collection(db, "bookings"), bookingData);
+                    alert("Plot booking allocated successfully!");
+                }
+                bootstrap.Modal.getInstance(document.getElementById("addBookingModal")).hide();
+                document.getElementById("bookingForm").reset();
+                loadAllBookingsAdmin();
+            } catch(err) { alert("Error: " + err.message); }
+        });
+
+        async function loadBrokerPortalData(brokerUid, brokerName) {
+            try {
+                const bookingsSnap = await getDocs(collection(db, "bookings"));
+                const tbody = document.getElementById("brokerBookingsTableBody");
+                tbody.innerHTML = "";
+                let totalBookings = 0, soldOutCount = 0, totalComm = 0, paymentPending = 0, paymentReceived = 0;
+
+                allBookingsCache = [];
+                bookingsSnap.forEach(d => {
+                    const id = d.id;
+                    const b = d.data();
+                    allBookingsCache.push({ id, ...b });
+                    
+                    if(b.brokerUid === brokerUid || (b.brokerName && b.brokerName.trim().toLowerCase() === brokerName.trim().toLowerCase())) {
+                        totalBookings++;
+                        const comm = Number(b.commission || 0);
+                        totalComm += comm;
+
+                        if (b.status === "Sold Out") soldOutCount++;
+                        if (b.paymentStatus === "Payment Received") paymentReceived += comm;
+                        else paymentPending += comm;
+
+                        let statusBadge = 'bg-secondary';
+                        if(b.status === 'Booked') statusBadge = 'bg-primary';
+                        else if(b.status === 'Sold Out') statusBadge = 'bg-success';
+                        else if(b.status === 'Cancelled') statusBadge = 'bg-danger';
+
+                        tbody.innerHTML += `
+                            <tr onclick="openBookingDetails('${id}')" style="cursor: pointer;">
+                                <td><strong>${b.customerName}</strong><br><small class="text-muted">${b.customerPhone}</small></td>
+                                <td>${b.plotNo}</td>
+                                <td><span class="badge ${statusBadge}">${b.status || 'Booked'}</span></td>
+                                <td>₹${comm.toLocaleString()}</td>
+                            </tr>`;
+                    }
+                });
+
+                document.getElementById("cardTotalBookings").textContent = totalBookings;
+                document.getElementById("cardSoldOut").textContent = soldOutCount;
+                document.getElementById("cardPaymentPending").textContent = `₹${paymentPending.toLocaleString()}`;
+                document.getElementById("cardPaymentReceived").textContent = `₹${paymentReceived.toLocaleString()}`;
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadAllBookingsAdmin() {
+            try {
+                const bookingsSnap = await getDocs(collection(db, "bookings"));
+                const tbody = document.getElementById("adminAllBookingsTableBody");
+                tbody.innerHTML = "";
+                allBookingsCache = [];
+
+                if(bookingsSnap.empty) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted small py-3">No bookings recorded yet.</td></tr>`;
+                    return;
+                }
+                bookingsSnap.forEach(d => {
+                    const id = d.id;
+                    const b = d.data();
+                    allBookingsCache.push({ id, ...b });
+                    const comm = Number(b.commission || 0);
+
+                    let statusBadge = 'bg-secondary';
+                    if(b.status === 'Booked') statusBadge = 'bg-primary';
+                    else if(b.status === 'Sold Out') statusBadge = 'bg-success';
+                    else if(b.status === 'Cancelled') statusBadge = 'bg-danger';
+
+                    tbody.innerHTML += `
+                        <tr onclick="openBookingDetails('${id}')" style="cursor: pointer;">
+                            <td><span class="fw-semibold text-primary">${b.brokerName}</span></td>
+                            <td><strong>${b.customerName}</strong><br><small>${b.customerPhone}</small></td>
+                            <td>Plot: ${b.plotNo}<br><span class="badge ${statusBadge}">${b.status || 'Booked'}</span></td>
+                            <td>₹${comm.toLocaleString()}<br><span class="badge ${b.paymentStatus === 'Payment Received' ? 'bg-success' : 'bg-warning text-dark'}">${b.paymentStatus || 'Pending'}</span></td>
+                        </tr>`;
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        window.openBookingDetails = function(id) {
+            const b = allBookingsCache.find(item => item.id === id);
+            if(!b) return;
+
+            const modalBody = document.getElementById("bookingDetailModalBody");
+            modalBody.innerHTML = `
+                <div class="space-y-2 text-sm">
+                    <p><strong>Executive / Broker:</strong> ${b.brokerName}</p>
+                    <p><strong>Customer Name:</strong> ${b.customerName}</p>
+                    <p><strong>Customer Phone:</strong> ${b.customerPhone}</p>
+                    <p><strong>Project Name:</strong> ${b.project}</p>
+                    <p><strong>Plot Number & Size:</strong> Plot ${b.plotNo} (${b.plotSize || 'N/A'} sqft)</p>
+                    <p><strong>Broker Std Comm / Sqft:</strong> ₹${Number(b.stdComm || 0).toLocaleString()}</p>
+                    <p><strong>Discount / Sqft:</strong> ₹${Number(b.discount || 0).toLocaleString()}</p>
+                    <p><strong>Total Plot Commission:</strong> ₹${Number(b.commission || 0).toLocaleString()}</p>
+                    <p><strong>Booking Status:</strong> <span class="badge bg-primary">${b.status || 'Booked'}</span></p>
+                    <p><strong>Payment Status:</strong> <span class="badge ${b.paymentStatus === 'Payment Received' ? 'bg-success' : 'bg-warning text-dark'}">${b.paymentStatus || 'Pending'}</span></p>
+                </div>
+            `;
+
+            const adminActions = document.getElementById("adminBookingActions");
+            if (currentUserData && currentUserData.role === "admin") {
+                adminActions.classList.remove("d-none");
+                document.getElementById("editBookingBtn").onclick = function() {
+                    bootstrap.Modal.getInstance(document.getElementById("bookingDetailModal")).hide();
+                    document.getElementById("bookingId").value = b.id;
+                    document.getElementById("bookBrokerSelect").value = b.brokerUid || "";
+                    document.getElementById("custName").value = b.customerName;
+                    document.getElementById("custPhone").value = b.customerPhone;
+                    document.getElementById("bookProject").value = b.project;
+                    document.getElementById("bookPlotNo").value = b.plotNo;
+                    document.getElementById("bookPlotSize").value = b.plotSize || "";
+                    document.getElementById("bookStdComm").value = b.stdComm || 0;
+                    document.getElementById("bookDiscount").value = b.discount || 0;
+                    document.getElementById("bookCommission").value = b.commission || 0;
+                    document.getElementById("bookStatus").value = b.status || "Booked";
+                    document.getElementById("bookPaymentStatus").value = b.paymentStatus || "Payment Pending";
+                    document.getElementById("bookingSubmitBtn").textContent = "Update Booking Form";
+                    new bootstrap.Modal(document.getElementById("addBookingModal")).show();
+                };
+
+                document.getElementById("deleteBookingBtn").onclick = async function() {
+                    if (confirm("Are you sure you want to delete this booking?")) {
+                        await deleteDoc(doc(db, "bookings", b.id));
+                        bootstrap.Modal.getInstance(document.getElementById("bookingDetailModal")).hide();
+                        loadAllBookingsAdmin();
+                        alert("Booking deleted successfully!");
+                    }
+                };
+            } else {
+                adminActions.classList.add("d-none");
+            }
+
+            document.getElementById("downloadBookingPdfBtn").onclick = function() {
+                const { jsPDF } = window.jspdf;
+                const docPdf = new jsPDF();
+                docPdf.setFillColor(15, 23, 42);
+                docPdf.rect(0, 0, 210, 35, "F");
+                docPdf.setTextColor(255, 255, 255);
+                docPdf.setFont("helvetica", "bold");
+                docPdf.setFontSize(18);
+                docPdf.text("TRUE NOVA REALTY", 14, 18);
+                docPdf.setFontSize(10);
+                docPdf.setFont("helvetica", "normal");
+                docPdf.text("OFFICIAL PLOT BOOKING RECEIPT", 14, 26);
+
+                docPdf.setTextColor(50, 50, 50);
+                docPdf.setFontSize(11);
+                let y = 48;
+                docPdf.text(`Customer Name: ${b.customerName}`, 14, y); y += 8;
+                docPdf.text(`Customer Mobile: ${b.customerPhone}`, 14, y); y += 8;
+                docPdf.text(`Project Name: ${b.project}`, 14, y); y += 8;
+                docPdf.text(`Plot No & Size: ${b.plotNo} (${b.plotSize || 'N/A'} sqft)`, 14, y); y += 8;
+                docPdf.text(`Booking Status: ${b.status || 'Booked'}`, 14, y); y += 8;
+                docPdf.text(`Payment Status: ${b.paymentStatus || 'Pending'}`, 14, y); y += 8;
+                docPdf.text(`Total Commission: Rs. ${Number(b.commission || 0).toLocaleString()}`, 14, y); y += 8;
+                docPdf.text(`Allocated Executive: ${b.brokerName}`, 14, y); y += 12;
+
+                docPdf.setDrawColor(200, 200, 200);
+                docPdf.line(14, y, 196, y);
+                y += 10;
+                docPdf.setFont("helvetica", "bold");
+                docPdf.text(`STATUS: ${(b.status || 'BOOKED').toUpperCase()}`, 14, y);
+
+                docPdf.save(`Booking_Receipt_${b.customerName.replace(/\s+/g, '_')}.pdf`);
+            };
+
+            new bootstrap.Modal(document.getElementById("bookingDetailModal")).show();
+        };
+
+        async function loadAdminData() {
+            try {
+                const revSnap = await getDocs(collection(db, "revenues"));
+                const expSnap = await getDocs(collection(db, "expenses"));
+                let totalRev = 0, totalExp = 0;
+                
+                const revBody = document.getElementById("revenueTableBody");
+                const expBody = document.getElementById("expenseTableBody");
+                revBody.innerHTML = "";
+                expBody.innerHTML = "";
+
+                revSnap.forEach(d => {
+                    const r = d.data();
+                    totalRev += Number(r.amount || 0);
+                    revBody.innerHTML += `<tr><td>${r.date}</td><td>${r.title} (${r.source})</td><td>${r.project || '-'}</td><td>₹${Number(r.amount).toLocaleString()}</td><td><span class="badge bg-light text-dark border">${r.paymentMode}</span></td></tr>`;
+                });
+
+                expSnap.forEach(d => {
+                    const id = d.id;
+                    const e = d.data();
+                    totalExp += Number(e.amount || 0);
+                    expBody.innerHTML += `
+                        <tr>
+                            <td>${e.date}</td>
+                            <td>${e.title}</td>
+                            <td><span class="badge bg-light text-secondary border">${e.category}</span></td>
+                            <td>₹${Number(e.amount).toLocaleString()}</td>
+                            <td>${e.paidBy}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary py-0 px-1 me-1" onclick="editExpense('${id}', '${e.date}', '${e.title}', '${e.category}', '${e.project || ''}', ${e.amount}, '${e.paidBy}')"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteExpense('${id}')"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>`;
+                });
+
+                const netPL = totalRev - totalExp;
+                const partnerShare = Math.round((netPL / 3) * 100) / 100;
+
+                document.getElementById("dashTotalRevenue").textContent = `₹${totalRev.toLocaleString()}`;
+                document.getElementById("dashTotalExpenses").textContent = `₹${totalExp.toLocaleString()}`;
+                document.getElementById("dashNetProfitLoss").textContent = `₹${netPL.toLocaleString()}`;
+                document.getElementById("dashPartnerShare").textContent = `₹${partnerShare.toLocaleString()}`;
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadProjectsData() {
+            try {
+                const projSnap = await getDocs(collection(db, "projects"));
+                const container = document.getElementById("projectsContainer");
+                container.innerHTML = "";
+                projSnap.forEach(d => {
+                    const p = d.data();
+                    container.innerHTML += `<div class="col-md-6"><div class="card p-4 bg-white shadow-sm border-start border-4 border-primary"><h5 class="fw-bold">${p.name}</h5><p class="text-muted small">${p.details}</p></div></div>`;
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadBrokersData() {
+            try {
+                const brokerSnap = await getDocs(collection(db, "users"));
+                const tbody = document.getElementById("adminBrokersTableBody");
+                const selectEl = document.getElementById("bookBrokerSelect");
+                const notifSelect = document.getElementById("notifTargetSelect");
+                
+                tbody.innerHTML = "";
+                selectEl.innerHTML = `<option value="">Select Executive</option>`;
+                notifSelect.innerHTML = `<option value="all">All Users (Bulk)</option>`;
+
+                brokerSnap.forEach(d => {
+                    const uid = d.id;
+                    const u = d.data();
+                    if(u.role === "broker") {
+                        selectEl.innerHTML += `<option value="${uid}">${u.name} (${u.email})</option>`;
+                        notifSelect.innerHTML += `<option value="${uid}">${u.name} (Broker)</option>`;
+                        tbody.innerHTML += `
+                            <tr>
+                                <td><strong>${u.name}</strong><br><small>${u.email} | ${u.phone || ''}</small></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteUserAccount('${uid}')">Delete</button>
+                                </td>
+                            </tr>`;
+                    }
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadUsersData() {
+            try {
+                const usersSnap = await getDocs(collection(db, "users"));
+                const tbody = document.getElementById("adminUsersTableBody");
+                const notifSelect = document.getElementById("notifTargetSelect");
+                tbody.innerHTML = "";
+
+                usersSnap.forEach(d => {
+                    const uid = d.id;
+                    const u = d.data();
+                    if(u.role === "partner") {
+                        notifSelect.innerHTML += `<option value="${uid}">${u.name} (Partner)</option>`;
+                        tbody.innerHTML += `
+                            <tr>
+                                <td class="fw-semibold">${u.name}</td>
+                                <td>${u.email}</td>
+                                <td><span class="badge bg-primary">PARTNER</span></td>
+                                <td>33.33%</td>
+                            </tr>`;
+                    }
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        window.deleteUserAccount = async function(uid) {
+            if(confirm("Are you sure you want to delete this user account?")) {
+                await deleteDoc(doc(db, "users", uid));
+                loadBrokersData();
+                loadUsersData();
+                alert("Account deleted successfully!");
+            }
+        };
+
+        document.getElementById("createPartnerForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const name = document.getElementById("newPartnerName").value;
+            const email = document.getElementById("newPartnerEmail").value;
+            const password = document.getElementById("newPartnerPassword").value;
+
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, password);
+                await setDoc(doc(db, "users", cred.user.uid), {
+                    name, email, role: "partner", sharePercentage: 33.33, createdAt: new Date().toISOString()
+                });
+                bootstrap.Modal.getInstance(document.getElementById("createPartnerModal")).hide();
+                document.getElementById("createPartnerForm").reset();
+                loadUsersData();
+                alert("Partner account created successfully!");
+            } catch (err) { alert("Error: " + err.message); }
+        });
+
+        document.getElementById("brokerForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const name = document.getElementById("brokerName").value;
+            const email = document.getElementById("brokerEmail").value;
+            const password = document.getElementById("brokerPassword").value;
+            const phone = document.getElementById("brokerPhone").value;
+
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, password);
+                await setDoc(doc(db, "users", cred.user.uid), { name, email, phone, role: "broker", createdAt: new Date().toISOString() });
+                bootstrap.Modal.getInstance(document.getElementById("addBrokerModal")).hide();
+                document.getElementById("brokerForm").reset();
+                loadBrokersData();
+                alert("Broker account created successfully!");
+            } catch(err) { alert("Error: " + err.message); }
+        });
+
+        document.getElementById("projectForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            await addDoc(collection(db, "projects"), { name: document.getElementById("projName").value, details: document.getElementById("projDetails").value });
+            bootstrap.Modal.getInstance(document.getElementById("addProjectModal")).hide();
+            document.getElementById("projectForm").reset();
+            loadProjectsData();
+        });
+    </script>
+</body>
+</html>
