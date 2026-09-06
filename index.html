@@ -987,11 +987,13 @@
                     paymentMode: document.getElementById("revMode").value,
                     createdAt: new Date().toISOString()
                 });
-                bootstrap.Modal.getInstance(document.getElementById("addRevenueModal")).hide();
+                const modalEl = document.getElementById("addRevenueModal");
+                const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                if(modalInstance) modalInstance.hide();
                 document.getElementById("revenueForm").reset();
                 loadAdminData();
                 alert("Revenue entry added successfully!");
-            } catch(err) { alert("Error: " + err.message); }
+            } catch(err) { alert("Error adding revenue: " + err.message); }
         });
 
         // Expense Form Submit
@@ -1017,10 +1019,12 @@
                     await addDoc(collection(db, "expenses"), expenseData);
                     alert("Expense added successfully!");
                 }
-                bootstrap.Modal.getInstance(document.getElementById("addExpenseModal")).hide();
+                const modalEl = document.getElementById("addExpenseModal");
+                const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                if(modalInstance) modalInstance.hide();
                 document.getElementById("expenseForm").reset();
                 loadAdminData();
-            } catch (err) { alert("Error: " + err.message); }
+            } catch (err) { alert("Error saving expense: " + err.message); }
         });
 
         window.openAddExpenseModal = function() {
