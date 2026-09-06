@@ -163,7 +163,7 @@
                                     <p class="text-muted small mb-0">Good Morning, Admin 👋</p>
                                 </div>
                                 <div class="d-flex gap-2">
-                                    <button class="btn btn-primary btn-sm px-3 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#addRevenueModal"><i class="bi bi-plus-lg me-1"></i> Revenue</button>
+                                    <button class="btn btn-primary btn-sm px-3 shadow-sm fw-semibold" onclick="openAddRevenueModal()"><i class="bi bi-plus-lg me-1"></i> Revenue</button>
                                     <button class="btn btn-dark btn-sm px-3 shadow-sm fw-semibold" onclick="openAddExpenseModal()"><i class="bi bi-plus-lg me-1"></i> Expense</button>
                                 </div>
                             </div>
@@ -200,7 +200,7 @@
                         <div id="adminRevenueView" class="app-view d-none">
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <h4 class="fw-bold mb-0">Revenue History & Management</h4>
-                                <button class="btn btn-primary btn-sm px-3 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#addRevenueModal">+ Add Revenue</button>
+                                <button class="btn btn-primary btn-sm px-3 shadow-sm fw-semibold" onclick="openAddRevenueModal()">+ Add Revenue</button>
                             </div>
                             <div class="card p-4 bg-white">
                                 <div class="table-responsive">
@@ -974,7 +974,14 @@
             } catch(err) { alert("Error: " + err.message); }
         });
 
-        // Revenue Form Submit
+        // Revenue Form Submit (Fixed & Safe Modal Closing)
+        window.openAddRevenueModal = function() {
+            document.getElementById("revenueForm").reset();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("revDate").value = today;
+            new bootstrap.Modal(document.getElementById("addRevenueModal")).show();
+        };
+
         document.getElementById("revenueForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             try {
@@ -987,16 +994,18 @@
                     paymentMode: document.getElementById("revMode").value,
                     createdAt: new Date().toISOString()
                 });
+                
                 const modalEl = document.getElementById("addRevenueModal");
-                const modalInstance = bootstrap.Modal.getInstance(modalEl);
-                if(modalInstance) modalInstance.hide();
+                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                modal.hide();
+                
                 document.getElementById("revenueForm").reset();
                 loadAdminData();
                 alert("Revenue entry added successfully!");
             } catch(err) { alert("Error adding revenue: " + err.message); }
         });
 
-        // Expense Form Submit
+        // Expense Form Submit (Fixed & Safe Modal Closing)
         document.getElementById("expenseForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const expenseId = document.getElementById("expenseId").value;
@@ -1019,9 +1028,11 @@
                     await addDoc(collection(db, "expenses"), expenseData);
                     alert("Expense added successfully!");
                 }
+                
                 const modalEl = document.getElementById("addExpenseModal");
-                const modalInstance = bootstrap.Modal.getInstance(modalEl);
-                if(modalInstance) modalInstance.hide();
+                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                modal.hide();
+                
                 document.getElementById("expenseForm").reset();
                 loadAdminData();
             } catch (err) { alert("Error saving expense: " + err.message); }
@@ -1032,6 +1043,8 @@
             document.getElementById("expenseSubmitBtn").textContent = "Save Expense";
             document.getElementById("expenseId").value = "";
             document.getElementById("expenseForm").reset();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("expDate").value = today;
             if(currentUserData) document.getElementById("expPaidBy").value = currentUserData.name;
             new bootstrap.Modal(document.getElementById("addExpenseModal")).show();
         };
