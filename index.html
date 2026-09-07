@@ -11,8 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <!-- jsPDF -->
+    <!-- jsPDF & autoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script>
         tailwind.config = {
           darkMode: "class",
@@ -194,6 +195,24 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- WEBSITE CONFIGURATION CARD ON DASHBOARD -->
+                            <div class="card p-4 bg-white shadow-sm mb-4">
+                                <h5 class="fw-bold fs-6 mb-3 text-dark"><i class="bi bi-globe me-2 text-primary"></i> Configure Portal Websites (Plot Booking & CRM)</h5>
+                                <form id="websiteConfigForm">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-semibold">Plot Booking Website URL</label>
+                                            <input type="url" id="bookingWebUrl" class="form-control form-control-sm" placeholder="https://your-booking-site.netlify.app" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-semibold">CRM Portal Website URL</label>
+                                            <input type="url" id="crmWebUrl" class="form-control form-control-sm" placeholder="https://crmtruenovarealty.netlify.app/" required>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-dark btn-sm mt-3 px-4 fw-semibold"><i class="bi bi-save me-1"></i> Save Website URLs</button>
+                                </form>
+                            </div>
                         </div>
 
                         <!-- REVENUE -->
@@ -205,7 +224,7 @@
                             <div class="card p-4 bg-white">
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle mb-0">
-                                        <thead class="table-light"><tr><th>Date</th><th>Title / Source</th><th>Project</th><th>Amount</th><th>Mode</th></tr></thead>
+                                        <thead class="table-light"><tr><th>Date</th><th>Title / Source</th><th>Project</th><th>Amount</th><th>Mode</th><th>Actions</th></tr></thead>
                                         <tbody id="revenueTableBody"></tbody>
                                     </table>
                                 </div>
@@ -516,11 +535,12 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4">
                 <div class="modal-header border-0 pb-0 pt-4 px-4">
-                    <h5 class="fw-bold fs-6">Add Revenue Entry</h5>
+                    <h5 class="fw-bold fs-6" id="revenueModalTitle">Add Revenue Entry</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <form id="revenueForm">
+                        <input type="hidden" id="revenueId">
                         <div class="mb-3"><label class="form-label small fw-semibold">Date</label><input type="date" id="revDate" class="form-control" required></div>
                         <div class="mb-3"><label class="form-label small fw-semibold">Title</label><input type="text" id="revTitle" class="form-control" required placeholder="Plot Booking"></div>
                         <div class="mb-3"><label class="form-label small fw-semibold">Customer / Source</label><input type="text" id="revSource" class="form-control" required placeholder="Customer Name"></div>
@@ -533,7 +553,7 @@
                                 <option value="Cash">Cash</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 py-2.5 fw-semibold mt-2">Save Revenue</button>
+                        <button type="submit" class="btn btn-primary w-100 py-2.5 fw-semibold mt-2" id="revenueSubmitBtn">Save Revenue</button>
                     </form>
                 </div>
             </div>
@@ -974,38 +994,66 @@
             } catch(err) { alert("Error: " + err.message); }
         });
 
-        // Revenue Form Submit (Fixed & Safe Modal Closing)
+        // Revenue Form Submit (Add & Edit)
+        document.getElementById("revenueForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const revenueId = document.getElementById("revenueId").value;
+            const revenueData = {
+                date: document.getElementById("revDate").value,
+                title: document.getElementById("revTitle").value,
+                source: document.getElementById("revSource").value,
+                project: document.getElementById("revProject").value,
+                amount: parseFloat(document.getElementById("revAmount").value),
+                paymentMode: document.getElementById("revMode").value,
+                updatedAt: new Date().toISOString()
+            };
+
+            try {
+                if (revenueId) {
+                    await updateDoc(doc(db, "revenues", revenueId), revenueData);
+                    alert("Revenue updated successfully!");
+                } else {
+                    revenueData.createdAt = new Date().toISOString();
+                    await addDoc(collection(db, "revenues"), revenueData);
+                    alert("Revenue entry added successfully!");
+                }
+                bootstrap.Modal.getInstance(document.getElementById("addRevenueModal")).hide();
+                document.getElementById("revenueForm").reset();
+                loadAdminData();
+            } catch(err) { alert("Error: " + err.message); }
+        });
+
         window.openAddRevenueModal = function() {
+            document.getElementById("revenueModalTitle").textContent = "Add Revenue Entry";
+            document.getElementById("revenueSubmitBtn").textContent = "Save Revenue";
+            document.getElementById("revenueId").value = "";
             document.getElementById("revenueForm").reset();
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById("revDate").value = today;
+            document.getElementById("revDate").valueAsDate = new Date();
             new bootstrap.Modal(document.getElementById("addRevenueModal")).show();
         };
 
-        document.getElementById("revenueForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            try {
-                await addDoc(collection(db, "revenues"), {
-                    date: document.getElementById("revDate").value,
-                    title: document.getElementById("revTitle").value,
-                    source: document.getElementById("revSource").value,
-                    project: document.getElementById("revProject").value,
-                    amount: parseFloat(document.getElementById("revAmount").value),
-                    paymentMode: document.getElementById("revMode").value,
-                    createdAt: new Date().toISOString()
-                });
-                
-                const modalEl = document.getElementById("addRevenueModal");
-                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-                modal.hide();
-                
-                document.getElementById("revenueForm").reset();
-                loadAdminData();
-                alert("Revenue entry added successfully!");
-            } catch(err) { alert("Error adding revenue: " + err.message); }
-        });
+        window.editRevenue = function(id, date, title, source, project, amount, paymentMode) {
+            document.getElementById("revenueModalTitle").textContent = "Edit Revenue Entry";
+            document.getElementById("revenueSubmitBtn").textContent = "Update Revenue";
+            document.getElementById("revenueId").value = id;
+            document.getElementById("revDate").value = date;
+            document.getElementById("revTitle").value = title;
+            document.getElementById("revSource").value = source;
+            document.getElementById("revProject").value = project;
+            document.getElementById("revAmount").value = amount;
+            document.getElementById("revMode").value = paymentMode;
+            new bootstrap.Modal(document.getElementById("addRevenueModal")).show();
+        };
 
-        // Expense Form Submit (Fixed & Safe Modal Closing)
+        window.deleteRevenue = async function(id) {
+            if(confirm("Are you sure you want to delete this revenue entry?")) {
+                await deleteDoc(doc(db, "revenues", id));
+                loadAdminData();
+                alert("Revenue entry deleted!");
+            }
+        };
+
+        // Expense Form Submit
         document.getElementById("expenseForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const expenseId = document.getElementById("expenseId").value;
@@ -1028,14 +1076,10 @@
                     await addDoc(collection(db, "expenses"), expenseData);
                     alert("Expense added successfully!");
                 }
-                
-                const modalEl = document.getElementById("addExpenseModal");
-                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-                modal.hide();
-                
+                bootstrap.Modal.getInstance(document.getElementById("addExpenseModal")).hide();
                 document.getElementById("expenseForm").reset();
                 loadAdminData();
-            } catch (err) { alert("Error saving expense: " + err.message); }
+            } catch (err) { alert("Error: " + err.message); }
         });
 
         window.openAddExpenseModal = function() {
@@ -1043,8 +1087,7 @@
             document.getElementById("expenseSubmitBtn").textContent = "Save Expense";
             document.getElementById("expenseId").value = "";
             document.getElementById("expenseForm").reset();
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById("expDate").value = today;
+            document.getElementById("expDate").valueAsDate = new Date();
             if(currentUserData) document.getElementById("expPaidBy").value = currentUserData.name;
             new bootstrap.Modal(document.getElementById("addExpenseModal")).show();
         };
@@ -1069,21 +1112,6 @@
                 alert("Expense deleted!");
             }
         };
-
-        document.getElementById("broadcastForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const title = document.getElementById("notifTitle").value;
-            const body = document.getElementById("notifBody").value;
-            const target = document.getElementById("notifTarget").value;
-
-            try {
-                await addDoc(collection(db, "notifications"), {
-                    title, body, target, createdAt: new Date().toISOString()
-                });
-                alert("Broadcast notification saved and sent successfully!");
-                document.getElementById("broadcastForm").reset();
-            } catch(err) { alert("Error: " + err.message); }
-        });
 
         document.getElementById("notificationForm").addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -1173,8 +1201,13 @@
                 const expSnap = await getDocs(collection(db, "expenses"));
                 let totalRev = 0, totalExp = 0;
                 allExpensesCache = [];
+                allRevenuesCache = [];
 
-                revSnap.forEach(d => totalRev += Number(d.data().amount || 0));
+                revSnap.forEach(d => {
+                    const r = d.data();
+                    allRevenuesCache.push(r);
+                    totalRev += Number(r.amount || 0);
+                });
                 expSnap.forEach(d => {
                     const e = d.data();
                     allExpensesCache.push(e);
@@ -1201,36 +1234,125 @@
             const start = document.getElementById("partnerStartDate").value;
             const end = document.getElementById("partnerEndDate").value;
 
+            const filteredRev = allRevenuesCache.filter(r => {
+                if (start && r.date < start) return false;
+                if (end && r.date > end) return false;
+                return true;
+            });
+
             const filteredExp = allExpensesCache.filter(e => {
                 if (start && e.date < start) return false;
                 if (end && e.date > end) return false;
                 return true;
             });
 
+            const revSum = filteredRev.reduce((sum, r) => sum + Number(r.amount || 0), 0);
             const expSum = filteredExp.reduce((sum, e) => sum + Number(e.amount || 0), 0);
-            const net = -expSum;
-            const share = Math.round((net / 3) * 100) / 100;
+            const netPL = revSum - expSum;
+            const partnerShare = Math.round((netPL / 3) * 100) / 100;
 
             const { jsPDF } = window.jspdf;
             const docPdf = new jsPDF();
+            
+            // Professional Corporate Header Background
             docPdf.setFillColor(15, 23, 42);
-            docPdf.rect(0, 0, 210, 35, "F");
+            docPdf.rect(0, 0, 210, 42, "F");
+
+            // Company Title & Subtitle
             docPdf.setTextColor(255, 255, 255);
             docPdf.setFont("helvetica", "bold");
-            docPdf.setFontSize(18);
-            docPdf.text("TRUE NOVA REALTY", 14, 18);
+            docPdf.setFontSize(20);
+            docPdf.text("TRUE NOVA REALTY", 14, 20);
+            
             docPdf.setFontSize(10);
             docPdf.setFont("helvetica", "normal");
-            docPdf.text("CORPORATE PROFIT & LOSS STATEMENT (33.33% PARTNER SHARE)", 14, 26);
+            docPdf.setTextColor(148, 163, 184);
+            docPdf.text("OFFICIAL CORPORATE PROFIT & LOSS STATEMENT (33.33% EQUAL PARTNER SHARE)", 14, 29);
 
-            docPdf.setTextColor(50, 50, 50);
+            // Statement Metadata
+            docPdf.setTextColor(51, 65, 85);
+            docPdf.setFont("helvetica", "bold");
             docPdf.setFontSize(11);
-            let y = 48;
-            docPdf.text(`Statement Period: ${start || 'Beginning'} to ${end || 'Present'}`, 14, y); y += 10;
-            docPdf.text(`Total Expenses in Period: Rs. ${expSum.toLocaleString()}`, 14, y); y += 10;
-            docPdf.text(`Partner Share (1/3): Rs. ${share.toLocaleString()}`, 14, y); y += 15;
+            let y = 52;
+            docPdf.text("Statement Period:", 14, y);
+            docPdf.setFont("helvetica", "normal");
+            docPdf.text(`${start || 'Inception'}  to  ${end || 'Present Date'}`, 55, y);
+            
+            y += 8;
+            docPdf.setFont("helvetica", "bold");
+            docPdf.text("Generated On:", 14, y);
+            docPdf.setFont("helvetica", "normal");
+            docPdf.text(new Date().toLocaleDateString(), 55, y);
 
-            docPdf.save(`Partner_Corporate_Statement.pdf`);
+            // Financial Summary Block (Table format for clean corporate alignment)
+            y += 12;
+            docPdf.autoTable({
+                startY: y,
+                head: [['Financial Metric', 'Total Amount (INR)']],
+                body: [
+                    ['Total Gross Revenue', `Rs. ${revSum.toLocaleString()}`],
+                    ['Total Operating Expenses', `Rs. ${expSum.toLocaleString()}`],
+                    ['Net Profit / (Loss)', `Rs. ${netPL.toLocaleString()}`],
+                    ['Partner Share (1/3rd Allocation)', `Rs. ${partnerShare.toLocaleString()}`]
+                ],
+                theme: 'grid',
+                headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+                bodyStyles: { textColor: [51, 65, 85], fontSize: 10 },
+                columnStyles: { 0: { cellWidth: 110 }, 1: { cellWidth: 72, fontStyle: 'bold', halign: 'right' } },
+                margin: { left: 14, right: 14 }
+            });
+
+            // Detailed Revenue Table
+            y = docPdf.lastAutoTable.finalY + 12;
+            docPdf.setFont("helvetica", "bold");
+            docPdf.setFontSize(12);
+            docPdf.setTextColor(15, 23, 42);
+            docPdf.text("Revenue Breakdown", 14, y);
+
+            y += 4;
+            const revRows = filteredRev.map(r => [r.date, r.title, r.source, r.project || '-', `Rs. ${Number(r.amount).toLocaleString()}`]);
+            docPdf.autoTable({
+                startY: y,
+                head: [['Date', 'Title', 'Source / Customer', 'Project', 'Amount']],
+                body: revRows.length > 0 ? revRows : [['-', 'No revenue records found for this period', '-', '-', '-']],
+                theme: 'striped',
+                headStyles: { fillColor: [22, 163, 74], textColor: [255, 255, 255], fontSize: 9 },
+                bodyStyles: { fontSize: 9 },
+                margin: { left: 14, right: 14 }
+            });
+
+            // Detailed Expenses Table
+            y = docPdf.lastAutoTable.finalY + 12;
+            docPdf.setFont("helvetica", "bold");
+            docPdf.setFontSize(12);
+            docPdf.setTextColor(15, 23, 42);
+            docPdf.text("Expense Breakdown", 14, y);
+
+            y += 4;
+            const expRows = filteredExp.map(e => [e.date, e.title, e.category, e.paidBy, `Rs. ${Number(e.amount).toLocaleString()}`]);
+            docPdf.autoTable({
+                startY: y,
+                head: [['Date', 'Title', 'Category', 'Paid By', 'Amount']],
+                body: expRows.length > 0 ? expRows : [['-', 'No expense records found for this period', '-', '-', '-']],
+                theme: 'striped',
+                headStyles: { fillColor: [220, 38, 38], textColor: [255, 255, 255], fontSize: 9 },
+                bodyStyles: { fontSize: 9 },
+                margin: { left: 14, right: 14 }
+            });
+
+            // Footer Signature Block on last page
+            let finalY = docPdf.lastAutoTable.finalY + 20;
+            if (finalY > 260) {
+                docPdf.addPage();
+                finalY = 30;
+            }
+            docPdf.setFont("helvetica", "normal");
+            docPdf.setFontSize(9);
+            docPdf.setTextColor(100, 100, 100);
+            docPdf.text("This is an electronically generated corporate report for True Nova Realty partners.", 14, finalY);
+            docPdf.text("Authorized Signatory / Admin", 150, finalY);
+
+            docPdf.save(`True_Nova_Corporate_Statement.pdf`);
         };
 
         document.getElementById("bookingForm").addEventListener("submit", async (e) => {
@@ -1322,7 +1444,7 @@
                 allBookingsCache = [];
 
                 if(bookingsSnap.empty) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted small py-3">No bookings recorded yet.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted small py-3">No bookings recorded yet.</td></tr>`;
                     return;
                 }
                 bookingsSnap.forEach(d => {
@@ -1448,29 +1570,49 @@
                 revBody.innerHTML = "";
                 expBody.innerHTML = "";
 
-                revSnap.forEach(d => {
-                    const r = d.data();
-                    totalRev += Number(r.amount || 0);
-                    revBody.innerHTML += `<tr><td>${r.date}</td><td>${r.title} (${r.source})</td><td>${r.project || '-'}</td><td>₹${Number(r.amount).toLocaleString()}</td><td><span class="badge bg-light text-dark border">${r.paymentMode}</span></td></tr>`;
-                });
+                if(revSnap.empty) {
+                    revBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted small py-3">No revenue recorded yet.</td></tr>`;
+                } else {
+                    revSnap.forEach(d => {
+                        const id = d.id;
+                        const r = d.data();
+                        totalRev += Number(r.amount || 0);
+                        revBody.innerHTML += `
+                            <tr>
+                                <td>${r.date}</td>
+                                <td>${r.title} (${r.source})</td>
+                                <td>${r.project || '-'}</td>
+                                <td>₹${Number(r.amount).toLocaleString()}</td>
+                                <td><span class="badge bg-light text-dark border">${r.paymentMode}</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary py-0 px-1 me-1" onclick="editRevenue('${id}', '${r.date}', '${r.title}', '${r.source}', '${r.project || ''}', ${r.amount}, '${r.paymentMode}')"><i class="bi bi-pencil"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteRevenue('${id}')"><i class="bi bi-trash"></i></button>
+                                </td>
+                            </tr>`;
+                    });
+                }
 
-                expSnap.forEach(d => {
-                    const id = d.id;
-                    const e = d.data();
-                    totalExp += Number(e.amount || 0);
-                    expBody.innerHTML += `
-                        <tr>
-                            <td>${e.date}</td>
-                            <td>${e.title}</td>
-                            <td><span class="badge bg-light text-secondary border">${e.category}</span></td>
-                            <td>₹${Number(e.amount).toLocaleString()}</td>
-                            <td>${e.paidBy}</td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-primary py-0 px-1 me-1" onclick="editExpense('${id}', '${e.date}', '${e.title}', '${e.category}', '${e.project || ''}', ${e.amount}, '${e.paidBy}')"><i class="bi bi-pencil"></i></button>
-                                <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteExpense('${id}')"><i class="bi bi-trash"></i></button>
-                            </td>
-                        </tr>`;
-                });
+                if(expSnap.empty) {
+                    expBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted small py-3">No expenses recorded yet.</td></tr>`;
+                } else {
+                    expSnap.forEach(d => {
+                        const id = d.id;
+                        const e = d.data();
+                        totalExp += Number(e.amount || 0);
+                        expBody.innerHTML += `
+                            <tr>
+                                <td>${e.date}</td>
+                                <td>${e.title}</td>
+                                <td><span class="badge bg-light text-secondary border">${e.category}</span></td>
+                                <td>₹${Number(e.amount).toLocaleString()}</td>
+                                <td>${e.paidBy}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary py-0 px-1 me-1" onclick="editExpense('${id}', '${e.date}', '${e.title}', '${e.category}', '${e.project || ''}', ${e.amount}, '${e.paidBy}')"><i class="bi bi-pencil"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteExpense('${id}')"><i class="bi bi-trash"></i></button>
+                                </td>
+                            </tr>`;
+                    });
+                }
 
                 const netPL = totalRev - totalExp;
                 const partnerShare = Math.round((netPL / 3) * 100) / 100;
@@ -1560,7 +1702,7 @@
             e.preventDefault();
             const name = document.getElementById("newPartnerName").value;
             const email = document.getElementById("newPartnerEmail").value;
-            const password = document.getElementById("newPartnerPassword").value;
+            const password = document.getElementById("newPartnerPassword2")?.value || document.getElementById("newPartnerPassword").value;
 
             try {
                 const cred = await createUserWithEmailAndPassword(auth, email, password);
